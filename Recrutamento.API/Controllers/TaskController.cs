@@ -58,7 +58,7 @@ namespace Recrutamento.API.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<TaskItemDto>>> GetTasks()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = User.FindFirstValue(ClaimTypes.Sid);
 
             var tasks = await _context.TaskItems
                 .Where(t => t.UserId == userId)
@@ -80,7 +80,7 @@ namespace Recrutamento.API.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<TaskItemDto>> GetTaskById(int id)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = User.FindFirstValue(ClaimTypes.Sid);
 
             var task = await _context.TaskItems
                 .Where(t => t.Id == id && t.UserId == userId)
@@ -103,7 +103,7 @@ namespace Recrutamento.API.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateTask(int id, UpdateTaskItemDto taskDto)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = User.FindFirstValue(ClaimTypes.Sid);
 
             var task = await _context.TaskItems.FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId);
             if (task == null) return NotFound();
@@ -121,7 +121,7 @@ namespace Recrutamento.API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTask(int id)
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = User.FindFirstValue(ClaimTypes.Sid);
 
             var task = await _context.TaskItems.FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId);
             if (task == null) return NotFound();

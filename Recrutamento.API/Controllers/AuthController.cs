@@ -16,6 +16,7 @@ namespace Recrutamento.API.Controllers
                                 IConfiguration _configuration,
                                 JwtTokenService _jwtTokenService) : ControllerBase
     {
+
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginModel model)
         {
