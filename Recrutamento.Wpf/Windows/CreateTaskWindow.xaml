@@ -1,0 +1,29 @@
+﻿<Window x:Class="Recrutamento.Wpf.Windows.CreateTaskWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Criar Nova Tarefa"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        Width="400" Height="350"
+        Background="White">
+
+    <Grid Margin="20">
+        <TextBlock Text="Nova Tarefa" FontSize="22" FontWeight="Bold" Foreground="#2E3192"
+                   HorizontalAlignment="Center" Margin="0,10,0,20"/>
+
+        <StackPanel>
+            <TextBlock Text="Título" FontSize="14" Foreground="Gray"/>
+            <TextBox Name="txtTitulo" Height="30" FontSize="14" BorderBrush="#2E3192"/>
+
+            <TextBlock Text="Descrição" FontSize="14" Foreground="Gray" Margin="0,10,0,0"/>
+            <TextBox Name="txtDescricao" Height="60" FontSize="14" BorderBrush="#2E3192" TextWrapping="Wrap" AcceptsReturn="True"/>
+
+            <TextBlock Text="Data de Conclusão (Opcional)" FontSize="14" Foreground="Gray" Margin="0,10,0,0"/>
+            <DatePicker Name="dpDataConclusao" Height="30"/>
+
+            <Button Name="btnCriarTarefa" Content="Criar Tarefa" Height="40" FontSize="16"
+                    Background="#2E3192" Foreground="White" Margin="0,20,0,0"
+                    Click="BtnCriarTarefa_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>
