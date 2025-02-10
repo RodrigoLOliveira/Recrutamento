@@ -9,8 +9,6 @@ namespace Recrutamento.Wpf
         public MainWindow()
         {
             InitializeComponent();
-            txtEmail.Text = "rodrigo16rj@gmail.com";
-            txtPassword.Password = "1996@Rodrigo";
         }
 
         private async void BtnLogin_Click(object sender, RoutedEventArgs e)
