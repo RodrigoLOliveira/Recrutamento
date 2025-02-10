@@ -39,6 +39,20 @@ namespace Recrutamento.Wpf.Services
             return true;
         }
 
+        public static async Task<bool> RegisterAsync(string email, string password)
+        {
+            var content = new StringContent(
+                JsonSerializer.Serialize(new { Email = email, Password = password }),
+                Encoding.UTF8,
+                "application/json"
+            );
+
+            var response = await _httpClient.PostAsync("api/auth/register", content);
+
+            return response.IsSuccessStatusCode;
+        }
+
+
         public static bool IsAuthenticated() => !string.IsNullOrEmpty(Token);
     }
 }

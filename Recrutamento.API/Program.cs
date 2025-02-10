@@ -1,6 +1,9 @@
 using Microsoft.Extensions.DependencyInjection;
+using Recrutamento.API.Interfaces;
 using Recrutamento.API.Services;
 using Recrutamento.API.Settings;
+using Recrutamento.Infra.Interfaces;
+using Recrutamento.Infra.Repositories;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,8 +14,10 @@ builder.AddContextSettings();
 builder.JwtTokenConfigure();
 
 // Services
+builder.Services.AddScoped<ITaskRepository, TaskRepository>();
 
 builder.Services.AddScoped<JwtTokenService>();
+builder.Services.AddScoped<ITaskService, TaskService>();
 
 builder.Services.AddAuthentication();
 builder.Services.AddAuthorization();

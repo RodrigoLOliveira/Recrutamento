@@ -1,23 +1,18 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Recrutamento.API.DTOs.Task;
-using Recrutamento.Domain.Enums;
-using Recrutamento.Domain.Models;
-using Recrutamento.Infra;
-using System;
+using Recrutamento.API.Interfaces;
+using Recrutamento.API.Services;
+using System.Collections.Generic;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace Recrutamento.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class TaskController(RecrutamentoDbContext _context, 
-                                UserManager<User> _userManager)
-                                : ControllerBase
+    public class TaskController(ITaskService _taskService) : ControllerBase
     {
 
         // Criar uma nova tarefa
@@ -25,33 +20,20 @@ namespace Recrutamento.API.Controllers
         public async Task<IActionResult> CreateTask(CreateTaskItemDto taskDto)
         {
             var userId = User.FindFirstValue(ClaimTypes.Sid);
-
-            var task = new TaskItem
+            if (userId == null)
             {
-                Titulo = taskDto.Titulo,
-                Descricao = taskDto.Descricao,
-                DataCriacao = DateTime.UtcNow,
-                DataConclusao = taskDto.DataConclusao,
-                Status = EnumTaskStatus.Pendente,
-                UserId = userId
-            };
-
-            if (task.DataConclusao.HasValue && task.DataConclusao < task.DataCriacao)
-            {
-                return BadRequest("A Data de Conclusão não pode ser anterior à Data de Criação.");
+                return Unauthorized("Usuário não autenticado.");
             }
 
-            _context.TaskItems.Add(task);
-            await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetTaskById), new { id = task.Id }, new TaskItemDto
+            try
             {
-                Id = task.Id,
-                Titulo = task.Titulo,
-                Descricao = task.Descricao,
-                DataCriacao = task.DataCriacao,
-                DataConclusao = task.DataConclusao,
-                Status = task.Status
-            });
+                var task = await _taskService.CreateTask(taskDto, userId);
+                return CreatedAtAction(nameof(GetTaskById), new { id = task.Id }, task);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         // Listar todas as tarefas do usuário autenticado
@@ -59,20 +41,12 @@ namespace Recrutamento.API.Controllers
         public async Task<ActionResult<IEnumerable<TaskItemDto>>> GetTasks()
         {
             var userId = User.FindFirstValue(ClaimTypes.Sid);
+            if (userId == null)
+            {
+                return Unauthorized("Usuário não autenticado.");
+            }
 
-            var tasks = await _context.TaskItems
-                .Where(t => t.UserId == userId)
-                .Select(t => new TaskItemDto
-                {
-                    Id = t.Id,
-                    Titulo = t.Titulo,
-                    Descricao = t.Descricao,
-                    DataCriacao = t.DataCriacao,
-                    DataConclusao = t.DataConclusao,
-                    Status = t.Status
-                })
-                .ToListAsync();
-
+            var tasks = await _taskService.GetTasks(userId);
             return Ok(tasks);
         }
 
@@ -81,21 +55,17 @@ namespace Recrutamento.API.Controllers
         public async Task<ActionResult<TaskItemDto>> GetTaskById(int id)
         {
             var userId = User.FindFirstValue(ClaimTypes.Sid);
+            if (userId == null)
+            {
+                return Unauthorized("Usuário não autenticado.");
+            }
 
-            var task = await _context.TaskItems
-                .Where(t => t.Id == id && t.UserId == userId)
-                .Select(t => new TaskItemDto
-                {
-                    Id = t.Id,
-                    Titulo = t.Titulo,
-                    Descricao = t.Descricao,
-                    DataCriacao = t.DataCriacao,
-                    DataConclusao = t.DataConclusao,
-                    Status = t.Status
-                })
-                .FirstOrDefaultAsync();
+            var task = await _taskService.GetTaskById(id, userId);
+            if (task == null)
+            {
+                return NotFound("Tarefa não encontrada.");
+            }
 
-            if (task == null) return NotFound();
             return Ok(task);
         }
 
@@ -104,16 +74,17 @@ namespace Recrutamento.API.Controllers
         public async Task<IActionResult> UpdateTask(int id, UpdateTaskItemDto taskDto)
         {
             var userId = User.FindFirstValue(ClaimTypes.Sid);
+            if (userId == null)
+            {
+                return Unauthorized("Usuário não autenticado.");
+            }
 
-            var task = await _context.TaskItems.FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId);
-            if (task == null) return NotFound();
+            var success = await _taskService.UpdateTask(id, taskDto, userId);
+            if (!success)
+            {
+                return NotFound("Tarefa não encontrada.");
+            }
 
-            task.Titulo = taskDto.Titulo;
-            task.Descricao = taskDto.Descricao;
-            task.DataConclusao = taskDto.DataConclusao;
-            task.Status = taskDto.Status;
-
-            await _context.SaveChangesAsync();
             return NoContent();
         }
 
@@ -122,12 +93,17 @@ namespace Recrutamento.API.Controllers
         public async Task<IActionResult> DeleteTask(int id)
         {
             var userId = User.FindFirstValue(ClaimTypes.Sid);
+            if (userId == null)
+            {
+                return Unauthorized("Usuário não autenticado.");
+            }
 
-            var task = await _context.TaskItems.FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId);
-            if (task == null) return NotFound();
+            var success = await _taskService.DeleteTask(id, userId);
+            if (!success)
+            {
+                return NotFound("Tarefa não encontrada.");
+            }
 
-            _context.TaskItems.Remove(task);
-            await _context.SaveChangesAsync();
             return NoContent();
         }
     }

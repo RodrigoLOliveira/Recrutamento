@@ -43,10 +43,10 @@ namespace Recrutamento.Wpf
             }
         }
 
-        private void Register_Click(object sender, RoutedEventArgs e)
+        private async void Register_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Funcionalidade de cadastro ainda não implementada!", "Atenção", MessageBoxButton.OK, MessageBoxImage.Warning);
-
+            RegisterWindow registerWindow = new RegisterWindow();
+            registerWindow.ShowDialog();
         }
     }
 }
