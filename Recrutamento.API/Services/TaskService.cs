@@ -114,5 +114,19 @@ namespace Recrutamento.API.Services
             await _taskRepository.DeleteAsync(task);
             return true;
         }
+
+        public async Task<IEnumerable<TaskItemDto>> GetTasksByStatus(string userId, EnumTaskStatus status)
+        {
+            var tasks = await _taskRepository.GetTasksByUserAsync(userId);
+            return tasks.Where(t => t.Status == status).Select(t => new TaskItemDto
+            {
+                Id = t.Id,
+                Titulo = t.Titulo,
+                Descricao = t.Descricao,
+                DataCriacao = t.DataCriacao,
+                DataConclusao = t.DataConclusao,
+                Status = t.Status
+            });
+        }
     }
 }

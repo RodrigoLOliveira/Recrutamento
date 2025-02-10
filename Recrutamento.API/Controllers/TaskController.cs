@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Recrutamento.API.DTOs.Task;
 using Recrutamento.API.Interfaces;
 using Recrutamento.API.Services;
+using Recrutamento.Domain.Enums;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -105,6 +106,20 @@ namespace Recrutamento.API.Controllers
             }
 
             return NoContent();
+        }
+
+        // Listar tarefas por status
+        [HttpGet("status/{status}")]
+        public async Task<ActionResult<IEnumerable<TaskItemDto>>> GetTasksByStatus(EnumTaskStatus status)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.Sid);
+            if (userId == null)
+            {
+                return Unauthorized("Usuário não autenticado.");
+            }
+
+            var tasks = await _taskService.GetTasksByStatus(userId, status);
+            return Ok(tasks);
         }
     }
 }

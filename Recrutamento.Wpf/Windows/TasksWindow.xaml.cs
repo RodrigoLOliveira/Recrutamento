@@ -1,24 +1,15 @@
-﻿using Recrutamento.Wpf.DTOs;
+﻿using Recrutamento.Domain.Enums;
+using Recrutamento.Wpf.DTOs;
+using Recrutamento.Wpf.Helpers;
 using Recrutamento.Wpf.Services;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace Recrutamento.Wpf.Windows
 {
-    /// <summary>
-    /// Lógica interna para TasksWindow.xaml
-    /// </summary>
     public partial class TasksWindow : Window
     {
         private readonly TaskService _taskService = new();
@@ -55,6 +46,36 @@ namespace Recrutamento.Wpf.Windows
             LoadTasksAsync();
         }
 
+        private async void BtnFiltrar_Click(object sender, RoutedEventArgs e)
+        {
+            var selectedStatus = (cbStatus.SelectedItem as ComboBoxItem)?.Content.ToString();
+            if (selectedStatus == "Todos")
+            {
+                await LoadTasksAsync();
+                return;
+            }
+
+            EnumTaskStatus status;
+            try
+            {
+                status = ConvertEnumTaskStatusHelper.ConvertStringToEnum(selectedStatus);
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Status inválido.", "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            try
+            {
+                TaskGrid.ItemsSource = await _taskService.GetTasksByStatusAsync(status);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         private async void TaskGrid_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Delete)
@@ -80,7 +101,7 @@ namespace Recrutamento.Wpf.Windows
                     if (deleted)
                     {
                         MessageBox.Show("Tarefa excluída com sucesso!", "Sucesso", MessageBoxButton.OK, MessageBoxImage.Information);
-                        await LoadTasksAsync(); // Atualiza a lista
+                        await LoadTasksAsync();
                     }
                     else
                     {

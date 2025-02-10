@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Text.Json;
 using Recrutamento.Wpf.DTOs;
 using System.Text;
+using Recrutamento.Domain.Enums;
 
 namespace Recrutamento.Wpf.Services
 {
@@ -92,6 +93,30 @@ namespace Recrutamento.Wpf.Services
             catch (Exception ex)
             {
                 throw new Exception($"Erro ao atualizar tarefa: {ex.Message}");
+            }
+        }
+
+        public async Task<List<TaskItemDto>> GetTasksByStatusAsync(EnumTaskStatus status)
+        {
+            if (string.IsNullOrEmpty(AuthService.Token))
+                throw new UnauthorizedAccessException("Usuário não autenticado!");
+
+            try
+            {
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", AuthService.Token);
+                var response = await _httpClient.GetAsync($"api/task/status/{status}");
+
+                if (!response.IsSuccessStatusCode)
+                    throw new Exception("Erro ao carregar tarefas!");
+
+                var jsonResponse = await response.Content.ReadAsStringAsync();
+                var opt = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+
+                return JsonSerializer.Deserialize<List<TaskItemDto>>(jsonResponse, opt) ?? new List<TaskItemDto>();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Erro ao buscar tarefas: {ex.Message}");
             }
         }
 
